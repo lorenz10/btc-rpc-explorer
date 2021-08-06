@@ -426,7 +426,7 @@ async function assessTxindexAvailability() {
 	// to assessing txindex availability by querying a known txid
 	debugLog("txindex check: trying getindexinfo");
 
-	try {
+	/*try {
 		global.getindexinfo = await coreApi.getIndexInfo();
 
 		debugLog(`txindex check: getindexinfo=${JSON.stringify(global.getindexinfo)}`);
@@ -477,7 +477,8 @@ async function assessTxindexAvailability() {
 
 		// try again in 5 mins
 		setTimeout(assessTxindexAvailability, retryTime);
-	}
+	}*/
+	global.txindexAvailable = true;
 }
 
 function refreshUtxoSetSummary() {
