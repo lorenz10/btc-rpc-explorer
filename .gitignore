@@ -60,3 +60,5 @@ typings/
 # cache dir
 cache/
 
+# Mac os files
+.DS_Store

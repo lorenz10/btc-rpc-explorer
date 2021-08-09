@@ -123,83 +123,10 @@ if (exchangeRates)
 				else
 					small.border-dotted.text-muted(title="Estimate unavailable<br/>A difficulty epoch just ended. The first block of the new epoch must be mined before an estimate can be calculated.", data-bs-toggle="tooltip", data-bs-html="true") next block needed…
 
-		+summaryItem("Coins", utxoSetSummary ? null : `This value is estimated.`)
-			- var maxSupply = coinConfig.maxSupplyByNetwork[activeBlockchain];
-
-			if (utxoSetSummary)
-				span #{parseFloat(utxoSetSummary.total_amount).toLocaleString()}
-				small.ms-2.text-muted
-					| (
-					span.border-dotted(title=`${new Decimal(utxoSetSummary.total_amount).dividedBy(maxSupply).times(100).toDP(4)}% have been mined into circulation`, data-bs-toggle="tooltip") #{new Decimal(utxoSetSummary.total_amount).dividedBy(maxSupply).times(100).toDP(1)}%
-					| )
-
-			else
-				- var estimatedSupply = utils.estimatedSupply(getblockchaininfo.blocks);
-
-				span #{parseInt(estimatedSupply).toLocaleString()}
-				small.ms-2.text-muted
-					| (
-					span.border-dotted(title=`${estimatedSupply.dividedBy(maxSupply).times(100).toDP(4)}% have been mined into circulation`, data-bs-toggle="tooltip") #{estimatedSupply.dividedBy(maxSupply).times(100).toDP(1)}%
-					| )
-
-		
-
-	hr.mt-3.mb-3
-
-	+summaryRow((mempoolInfo == undefined ? 0 : 1) + (smartFeeEstimates ? ((smartFeeEstimates[1] ? 1 : 0) + (smartFeeEstimates[6] ? 1 : 0) + (smartFeeEstimates[144] ? 1 : 0)) : 0))
 		if (mempoolInfo)
 			+summaryItem("Mempool")
 				span(class=(mempoolInfo.size > 11000) ? "text-danger" : (mempoolInfo.size > 7000 ? "text-warning" : "text-success")) #{mempoolInfo.size.toLocaleString()}
+				
 
-		if (false)
-			+summaryItem("Next Block (est.)")
-				| #{new Decimal(nextBlockMinFeeRate).toDP(0)}
-				a(href=`./tx/${nextBlockMinFeeTxid}`)
-					i.fas.fa-circle
-				| - #{new Decimal(nextBlockMaxFeeRate).toDP(0)}
-				a(href=`./tx/${nextBlockMaxFeeTxid}`)
-					i.fas.fa-circle
-				small.ms-2.text-muted sat/vB
-
-		if (smartFeeEstimates && smartFeeEstimates[1])
-			+summaryItem("Smart Fee (1 block)")
-				| #{smartFeeEstimates[1]}
-				small.ms-2.text-muted sat/vB
-
-		if (smartFeeEstimates && smartFeeEstimates[6])
-			+summaryItem("Smart Fee (1 hr)")
-				| #{smartFeeEstimates[6]}
-				small.ms-2.text-muted sat/vB
-
-		if (smartFeeEstimates && smartFeeEstimates[144])
-			+summaryItem("Smart Fee (1 day)")
-				| #{smartFeeEstimates[144]}
-				small.ms-2.text-muted sat/vB
-
-	if (userSettings.homepageShowTechDetails == "true")
-		hr.mt-3.mb-3
-
-		+summaryRow(1 + (getblockchaininfo.size_on_disk ? 1 : 0) + (utxoSetSummary || utxoSetSummaryPending ? 1 : 0))
-			if (getblockchaininfo.size_on_disk)
-				+summaryItem("Disk Usage")
-					- var sizeData = utils.formatLargeNumber(getblockchaininfo.size_on_disk, 1);
-					| #{sizeData[0]} #{sizeData[1].abbreviation}B
-
-			+summaryItem("Total Hashes", "Estimate of the total work necessary to produce the blockchain, measured in 'hashes'.")
-				- var chainworkData = utils.formatLargeNumber(parseInt("0x" + getblockchaininfo.chainwork), 2);
-				span #{chainworkData[0]}
-				small.px-2.px-lg-0.px-xl-2 x
-				span 10
-				sup #{chainworkData[1].exponent}
-
-
-			if (utxoSetSummary || utxoSetSummaryPending)
-				+summaryItem("UTXOs", "The total number of unspent transaction outputs (spendable coin units).")
-					if (utxoSetSummary)
-						- var utxoCount = utils.formatLargeNumber(utxoSetSummary.txouts, 2);
-						//| #{utxoCount[0]} #{utxoCount[1].abbreviation}
-						| #{utxoSetSummary.txouts.toLocaleString()}
-					else
-						small.text-muted.border-dotted(title=utxoCalculatingDesc, data-bs-toggle="tooltip") calculating...
-
+				
 

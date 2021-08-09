@@ -1079,11 +1079,16 @@ function getVoutAddress(vout) {
 
 function getVoutAddresses(vout) {
 	if (vout && vout.scriptPubKey) {
-		if (vout.scriptPubKey.address) {
-			return [vout.scriptPubKey.address];
+		if (vout.scriptPubKey.type=="pubkey" && vout.scriptPubKey.asm) {
+			return [vout.scriptPubKey.asm.split(" ")[0]];
 
-		} else if (vout.scriptPubKey.addresses) {
-			return vout.scriptPubKey.addresses;
+		} else if (vout.scriptPubKey.type=="pubkeyhash") {
+			if (vout.scriptPubKey.address) {
+				return [vout.scriptPubKey.address];
+
+			} else if (vout.scriptPubKey.addresses) {
+				return vout.scriptPubKey.addresses;
+			}
 		}
 	}
 

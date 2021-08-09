@@ -15,12 +15,9 @@ mixin asciiHexDataDisplay(dataName, uniqueId, hex)
 
 mixin inputValueDisplay(tx, txVin, vout)
 	if (txVin.coinbase)
-		span.border-dotted.me-1(title="This is the <b>block subsidy</b> - newly created coins awarded (automatically, by the network protocol) to the miner that found this block.", data-bs-toggle="tooltip", data-bs-html="true")
-			i.fas.fa-asterisk.text-success
 
 		span(class=(tx.vin.length == 1 ? "fw-bold" : false))
-			- var currencyValue = coinConfig.blockRewardFunction(blockHeight, activeBlockchain);
-			+valueDisplay(currencyValue)
+			+valueDisplay(0)
 
 	else
 		if (vout && vout.value)
@@ -65,6 +62,7 @@ mixin outputValueDisplay(vout)
 					else if (!global.txindexAvailable)
 						- var txInput = {txid:txVin.txid, vout:txVin.vout};
 						- var vout = {};
+						
 
 				if (txVin.coinbase || vout || !global.txindexAvailable)
 					.clearfix

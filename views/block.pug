@@ -66,7 +66,7 @@ block content
 				
 
 				+contentSection("Summary")
-					+summaryRow(2 + (result.getblock.miner ? 1 : 0) + (result.blockstats ? 1 : 0))
+					+summaryRow(3 + (result.getblock.miner ? 1 : 0) + (result.blockstats ? 1 : 0))
 						+summaryItem("Date")
 							+timestamp(result.getblock.time, true)
 							
@@ -89,73 +89,24 @@ block content
 									small.badge.bg-primary #{result.getblock.miner.name}
 
 						if (result.blockstats)
-							+summaryItem("Total Output", "Total value of all transaction outputs")
+							+summaryItem("Transfered", "The amount transferred by all transactions.")
 								if (result.blockstats.total_out)
-									- var currencyValue = new Decimal(result.blockstats.total_out).plus(new Decimal(result.blockstats.totalfee)).plus(new Decimal(result.blockstats.subsidy));
-									- currencyValue = currencyValue.dividedBy(coinConfig.baseCurrencyUnit.multiplier);
+									- var currencyValue = new Decimal(result.blockstats.total_out).dividedBy(1000000);
 									+valueDisplay(currencyValue)
 
 								else
 									span 0
 
-				if (result.blockstats && result.blockstats.ins && result.blockstats.ins > 0)
-					+contentSection("Fee Details", true, "blockPageShowFeeSummary", true)
-						+summaryRow(3 + (result.blockstats.feerate_percentiles ? 1 : 0))
-							+summaryItem("Total Fees")
+						if (result.blockstats)
+							+summaryItem("Total Fees", "Total value of all transaction fees (conbase and coinstake tx have no fee)")
 								if (result.blockstats.totalfee)
-									- var currencyValue = new Decimal(result.blockstats.totalfee).dividedBy(coinConfig.baseCurrencyUnit.multiplier);
-									+valueDisplay(currencyValue)
-
-								else
-									- var currencyValue = new Decimal(result.getblock.totalFees);
-									+valueDisplay(currencyValue)
-
-							if (result.blockstats.feerate_percentiles)
-								+summaryItem("Rate Percentiles", null, "sat/vB")
-									- var percentiles = [[10, 0], [50, 2], [90, 4]];
-
-									if (true)
-										.d-flex.justify-content-start.justify-content-md-center
-											each item, itemIndex in percentiles
-												.text-start.text-md-center(style="width: 75px;")
-													span.text-muted #{item[0]}
-														sup th
-
-													br
-													| #{result.blockstats.feerate_percentiles[item[1]]}
-
-
-							+summaryItem("Min / Max Rates", null, "sat/vB")
-								if (result.blockstats.minfeerate || result.blockstats.minfeerate == 0)
-									span #{result.blockstats.minfeerate.toLocaleString()}
-									
-								else
-									span ?
-
-								span.mx-2 -
-
-								if (result.blockstats.maxfeerate)
-									span #{result.blockstats.maxfeerate.toLocaleString()}
-									
-								else
-									span ?
-
-							+summaryItem("Min / Max Values")
-								if (result.blockstats.minfee)
-									- var currencyValue = new Decimal(result.blockstats.minfee).dividedBy(coinConfig.baseCurrencyUnit.multiplier);
-									+valueDisplay(currencyValue)
+									- var currencyValue2 = new Decimal(result.blockstats.totalfee).dividedBy(1000000);
+									+valueDisplaySpecial(currencyValue2, 4)
 
 								else
 									span 0
 
-								br
 
-								if (result.blockstats.maxfee)
-									- var currencyValue = new Decimal(result.blockstats.maxfee).dividedBy(coinConfig.baseCurrencyUnit.multiplier);
-									+valueDisplay(currencyValue)
-
-								else
-									span 0
 
 				+contentSection("Technical Details", true, "blockPageShowTechSummary")
 					+summaryRow(6 + (result.getblock.weight ? 1 : 0) + (result.getblock.size ? 1 : 0) + (result.blockstats ? 1 : 0) + (result.blockstats && result.blockstats.utxo_increase ? 1 : 0) + (result.blockstats && result.blockstats.maxtxsize ? 1 : 0))
