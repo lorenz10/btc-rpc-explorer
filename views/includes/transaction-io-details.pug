@@ -246,13 +246,20 @@ mixin outputValueDisplay(vout)
 							.my-2
 								+asciiHexDataDisplay("OP_RETURN data", `op_return-${tx.txid}-${vout.n}`, vout.scriptPubKey.asm.substring("OP_RETURN ".length))
 
-						else if (vout.scriptPubKey.asm && vout.scriptPubKey.asm.startsWith('OP_RETURN '))
-							span.ms-2
-								+primaryBadge("OP_RETURN")
+						else if (vout.scriptPubKey.asm && vout.scriptPubKey.asm.startsWith('OP_RETURN'))
+							if (vout.scriptPubKey.asm.startsWith('OP_RETURN 4e33484642'))
+								span.ms-2
+									+primaryBadge("HASH_TIMESTAMP")
 
-							.my-2
-								+asciiHexDataDisplay("OP_RETURN data", `op_return-${tx.txid}-${vout.n}`, vout.scriptPubKey.asm.substring("OP_RETURN ".length))
-						
+								.my-2
+									+asciiHexDataDisplay("OP_RETURN data", `op_return-${tx.txid}-${vout.n}`, vout.scriptPubKey.asm.substring("OP_RETURN 4e33484642".length))
+							else 
+								span.ms-2
+									+primaryBadge("OP_RETURN")
+
+								.my-2
+									+asciiHexDataDisplay("OP_RETURN data", `op_return-${tx.txid}-${vout.n}`, vout.scriptPubKey.asm.substring("OP_RETURN ".length))
+							
 						else if (vout.scriptPubKey.type)
 							span.ms-2
 								+darkBadge
