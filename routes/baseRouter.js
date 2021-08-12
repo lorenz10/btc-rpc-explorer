@@ -302,14 +302,22 @@ router.get("/", asyncHandler(async (req, res, next) => {
 		var timePerBlock2 = dt / heightDiff;
 		var predictedBlockCount = dt / coinConfig.targetBlockTimeSeconds;
 
+		var blockRatioPercent = new Decimal(blockCount / predictedBlockCount).times(100);
+		if (blockRatioPercent > 400) {
+			blockRatioPercent = new Decimal(400);
+		}
+		if (blockRatioPercent < 25) {
+			blockRatioPercent = new Decimal(25);
+		}
+
 		if (predictedBlockCount > blockCount) {
-			var diffAdjPercent = new Decimal(100).minus(new Decimal(blockCount / predictedBlockCount).times(100)).times(-1);
+			var diffAdjPercent = new Decimal(100).minus(blockRatioPercent).times(-1);
 			var diffAdjText = `Blocks during the current difficulty epoch have taken this long, on average, to be mined. If this pace continues, then in ${res.locals.blocksUntilDifficultyAdjustment.toLocaleString()} block${res.locals.blocksUntilDifficultyAdjustment == 1 ? "" : "s"} (${daysUntilAdjustmentStr}) the difficulty will adjust downward: -${diffAdjPercent.toDP(1)}%`;
 			var diffAdjSign = "-";
 			var textColorClass = "text-danger";
 
 		} else {
-			var diffAdjPercent = new Decimal(100).minus(new Decimal(predictedBlockCount / blockCount).times(100));
+			var diffAdjPercent = blockRatioPercent.minus(new Decimal(100));
 			var diffAdjText = `Blocks during the current difficulty epoch have taken this long, on average, to be mined. If this pace continues, then in ${res.locals.blocksUntilDifficultyAdjustment.toLocaleString()} block${res.locals.blocksUntilDifficultyAdjustment == 1 ? "" : "s"} (${daysUntilAdjustmentStr}) the difficulty will adjust upward: +${diffAdjPercent.toDP(1)}%`;
 			var diffAdjSign = "+";
 			var textColorClass = "text-success";
@@ -701,6 +709,8 @@ router.get("/xyzpub/:extendedPubkey", asyncHandler(async (req, res, next) => {
 		
 		res.locals.paginationBaseUrl = `./xyzpub/${extendedPubkey}`;
 
+		res.locals.metaTitle = `Extended Public Key: ${utils.ellipsizeMiddle(extendedPubkey, 24)}`;
+
 
 		res.locals.relatedKeys = [];
 
@@ -1028,6 +1038,8 @@ router.get("/block-height/:blockHeight", asyncHandler(async (req, res, next) => 
 		var limit = config.site.blockTxPageSize;
 		var offset = 0;
 
+		res.locals.maxTxOutputDisplayCount = 15;
+
 		if (req.query.limit) {
 			limit = parseInt(req.query.limit);
 
@@ -1123,6 +1135,8 @@ router.get("/block/:blockHash", asyncHandler(async (req, res, next) => {
 
 		var limit = config.site.blockTxPageSize;
 		var offset = 0;
+
+		res.locals.maxTxOutputDisplayCount = 15;
 
 		if (req.query.limit) {
 			limit = parseInt(req.query.limit);
@@ -1361,6 +1375,8 @@ router.get("/tx/:transactionId", asyncHandler(async (req, res, next) => {
 		res.locals.txid = txid;
 		res.locals.output = output;
 
+		res.locals.maxTxOutputDisplayCount = 40;
+
 
 		if (req.query.blockHeight) {
 			res.locals.blockHeight = req.query.blockHeight;
@@ -1468,6 +1484,8 @@ router.get("/address/:address", asyncHandler(async (req, res, next) => {
 		var offset = 0;
 		var sort = "desc";
 
+		res.locals.maxTxOutputDisplayCount = config.site.addressPage.txOutputMaxDefaultDisplay;
+
 		
 		if (req.query.limit) {
 			limit = parseInt(req.query.limit);
@@ -1491,6 +1509,8 @@ router.get("/address/:address", asyncHandler(async (req, res, next) => {
 
 		var address = utils.asAddress(req.params.address);
 
+		res.locals.metaTitle = `Bitcoin Address ${address}`;
+
 		res.locals.address = address;
 		res.locals.limit = limit;
 		res.locals.offset = offset;
@@ -1501,34 +1521,56 @@ router.get("/address/:address", asyncHandler(async (req, res, next) => {
 		
 		res.locals.result = {};
 
-		var parseAddressErrors = [];
+		var addressEncoding = "unknown";
+
+		var base58Error = null;
+		var bech32Error = null;
+		var bech32mError = null;
 
 		try {
 			res.locals.addressObj = bitcoinjs.address.fromBase58Check(address);
+			addressEncoding = "base58";
 
 		} catch (err) {
-			if (!err.message.startsWith("Error: Non-base58 character")) {
-				parseAddressErrors.push(utils.logError("u3gr02gwef", err));
+			base58Error = err;
+		}
+
+		if (addressEncoding == "unknown") {
+			try {
+				res.locals.addressObj = bitcoinjs.address.fromBech32(address);
+				addressEncoding = "bech32";
+
+			} catch (err) {
+				bech32Error = err;
 			}
 		}
 
-		try {
-			res.locals.addressObj = bitcoinjs.address.fromBech32(address);
-
-		} catch (err) {
-			if (err.message.includes("Invalid checksum")) {
+		if (addressEncoding == "unknown") {
+			try {
 				res.locals.addressObj = bech32m.decode(address);
+				addressEncoding = "bech32m";
 
-			} else if (!err.message.startsWith("Error: Mixed-case string " + address)) {
-				parseAddressErrors.push(utils.logError("u02qg02yqge", err));
+			} catch (err) {
+				bech32mError = err;
+			}
+		}
+		
+
+		if (res.locals.addressObj == null || addressEncoding == "unknown") {
+			if (base58Error) {
+				res.locals.pageErrors.push(utils.logError("AddressParseError-001", base58Error));
+			}
+
+			if (bech32Error) {
+				res.locals.pageErrors.push(utils.logError("AddressParseError-002", bech32Error));
+			}
+
+			if (bech32mError) {
+				res.locals.pageErrors.push(utils.logError("AddressParseError-003", bech32mError));
 			}
 		}
 
-		if (res.locals.addressObj == null) {
-			parseAddressErrors.forEach(function(x) {
-				res.locals.pageErrors.push(x);
-			});
-		}
+		res.locals.addressEncoding = addressEncoding;
 
 		if (global.miningPoolsConfigs) {
 			for (var i = 0; i < global.miningPoolsConfigs.length; i++) {

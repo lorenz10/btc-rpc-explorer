@@ -1,10 +1,11 @@
 ##### v3.2.0
-###### 2021-08-04
+###### 2021-08-10
 
 * Public API! See the docs at [/api/docs](./api/docs) (thanks [@pointbiz](https://github.com/pointbiz))
 * XPUB pages: search for any xpub (ypub, zpub, etc) and see summary details and a list of associated addresses (thanks [@pointbiz](https://github.com/pointbiz))
 * Homepage: add "Predicted Next Block" section
 * Mempool Summary: add top-fee transactions table
+* Improvements to transaction details UI, especially on smaller screens
 * Cleanup support for Taproot/bech32m
 * New [/mining-template](./mining-template) tool, showing structured output of `getblocktemplate` command
 * Various improvements to charts and graphs throughout the tool (including lots of y-axis changes: linear->log)
@@ -20,6 +21,7 @@
 * Fix for `DEBUG` environment variable being ignored
 * Fix for [/rpc-terminal](./rpc-terminal) not parsing non-int parameters properly
 * Fix for edge case where txindex availability check fails at startup (add retries with exp. backoff)
+* Fix for tiny-value display (i.e. 1e-8 -> 0.00000001)
 * Misc UI/UX tweaks
 * Cache busting for frontend resources
 * Improved error handling in many places
