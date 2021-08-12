@@ -169,7 +169,7 @@
 
 						if (blockstatsByHeight)
 							td.font-monospace.text-end
-								if (blockstatsByHeight[block.height])
+								if (blockstatsByHeight[block.height] && blockstatsByHeight[block.height].flags)
 									if(blockstatsByHeight[block.height].flags.toLocaleString().includes("proof-of-work"))
 										span PoW 
 									else 
